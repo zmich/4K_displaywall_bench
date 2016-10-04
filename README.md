@@ -37,4 +37,4 @@ sudo apt-get install libxcursor-dev
 
 #License
 
-4K_displaywall_bench is freely available for download under the terms of the [BSD3]((https://github.com/Oblong/4K_displaywall_bench/blob/master/COPYING "COPYING") License.
+4K_displaywall_bench is freely available for download under the terms of the [BSD3](https://github.com/Oblong/4K_displaywall_bench/blob/master/COPYING "COPYING") License.
