@@ -5,18 +5,18 @@ While most benchmarks are intended for the gaming industry, this simple app is f
 
 #Building
 
-cmake .
+    cmake .
 
-make
+    make
 
 Use cmake flag -DCMAKE_BUILD_TYPE=Debug to enable OpenGL debug output extension (4.3 and higher)
 
 
 #Running
 
-./4K_displaywall_bench -help
+    ./4K_displaywall_bench -help
 
-./4K_displaywall_bench -width 11520 -height 2160 -swap_interval 0
+    ./4K_displaywall_bench -width 11520 -height 2160 -swap_interval 0
 
 Use the width and height to define the viewport, which may span multiple displays.
 
@@ -26,13 +26,13 @@ If your driver does not support OpenGL 4.4 (GLXBadFBConfig), run with -gl 3 for 
 
 you may need to do this:
 
-sudo wget -P /usr/include/GL http://www.opengl.org/registry/api/GL/glcorearb.h
+    sudo wget -P /usr/include/GL http://www.opengl.org/registry/api/GL/glcorearb.h
 
 tested on Ubuntu 16.04, you might need:
 
-sudo apt-get install libxrandr-dev
-sudo apt-get install libxinerama-dev
-sudo apt-get install libxcursor-dev
+    sudo apt-get install libxrandr-dev
+    sudo apt-get install libxinerama-dev
+    sudo apt-get install libxcursor-dev
 
 
 #License
