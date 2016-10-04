@@ -1,27 +1,20 @@
+cmake_minimum_required (VERSION 3.5)
 
-cmake_minimum_required (VERSION 2.8)
+include("cmake/HunterGate.cmake")
+HunterGate(
+  URL "https://github.com/ruslo/hunter/archive/v0.16.3.tar.gz"
+  SHA1 "9a9ef7e83c822f95de7b32f44114fa1b1edda5d0"
+)
 project (4K_displaywall_bench)
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+hunter_add_package(glfw)
+find_package(glfw3 REQUIRED)
 
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-add_subdirectory(glfw-3.2)
+hunter_add_package(glm)
+find_package(glm REQUIRED)
 
-include_directories( . glfw-3.2/deps glm png)
+add_executable (4K_displaywall_bench main.cpp Scene.cpp png/lodepng.cpp glad/glad.c)
+target_include_directories(4K_displaywall_bench PRIVATE "${CMAKE_CURRENT_SOURCE_DIRECTORY}")
+target_compile_definitions(4K_displaywall_bench PRIVATE _USE_MATH_DEFINES)
 
-set(GLAD "glfw-3.2/deps/glad.c")
-
-set(PNG "png/lodepng.cpp")
-
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-if (COMPILER_SUPPORTS_CXX11)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-endif()
-
-
-add_executable (4K_displaywall_bench main.cpp Scene.cpp ${GLAD} ${PNG})
-
-target_link_libraries(4K_displaywall_bench glfw GL)
+target_link_libraries(4K_displaywall_bench glfw glm)

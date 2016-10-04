@@ -5,9 +5,17 @@ While most benchmarks are intended for the gaming industry, this simple app is f
 
 #Building
 
+##Linux
+
     cmake .
 
     make
+    
+##Windows
+
+    cmake -G "Visual Studio 14 2015" .
+
+    cmake --build .
 
 Use cmake flag -DCMAKE_BUILD_TYPE=Debug to enable OpenGL debug output extension (4.3 and higher)
 
@@ -21,19 +29,6 @@ Use cmake flag -DCMAKE_BUILD_TYPE=Debug to enable OpenGL debug output extension 
 Use the width and height to define the viewport, which may span multiple displays.
 
 If your driver does not support OpenGL 4.4 (GLXBadFBConfig), run with -gl 3 for a version 3.3 context.
-
-#Troubleshooting
-
-you may need to do this:
-
-    sudo wget -P /usr/include/GL http://www.opengl.org/registry/api/GL/glcorearb.h
-
-tested on Ubuntu 16.04, you might need:
-
-    sudo apt-get install libxrandr-dev
-    sudo apt-get install libxinerama-dev
-    sudo apt-get install libxcursor-dev
-
 
 #License
 
