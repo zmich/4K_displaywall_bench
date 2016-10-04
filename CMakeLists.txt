@@ -15,5 +15,6 @@ find_package(glm REQUIRED)
 
 add_executable (4K_displaywall_bench main.cpp Scene.cpp png/lodepng.cpp glad/glad.c)
 target_include_directories(4K_displaywall_bench PRIVATE "${CMAKE_CURRENT_SOURCE_DIRECTORY}")
+target_compile_definitions(4K_displaywall_bench PRIVATE _USE_MATH_DEFINES)
 
 target_link_libraries(4K_displaywall_bench glfw glm)
