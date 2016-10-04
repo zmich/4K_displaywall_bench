@@ -17,4 +17,6 @@ sudo apt-get install libxrandr-dev
 sudo apt-get install libxinerama-dev
 sudo apt-get install libxcursor-dev
 
+If your driver does not support OpenGL 4.4 (GLXBadFBConfig), run with -gl 3 for a version 3.3 context.
+
 
