@@ -11,6 +11,7 @@ namespace proto {
   int width = 640;
   int height = 480;
   int swap_interval = 0;
+  int gl_version = 4;
   std::string filedir;
   Scene *scene;
 }
@@ -23,6 +24,7 @@ void help_msg (std::string prog)
   std::cout << "    -width [w]" << std::endl;
   std::cout << "    -height [h]" << std::endl;
   std::cout << "    -swap_interval [0 (disable vsync) or 1 (enable vsync)]" << std::endl;
+  std::cout << "    -gl [3 (OpenGL version 3.3) or 4 (OpenGL version 4.4, default)]" << std::endl;
   exit (EXIT_SUCCESS);
 }
 
@@ -34,6 +36,8 @@ void validate_args ()
     height = 480;
   if (!(swap_interval == 0 || swap_interval == 1))
     swap_interval = 0;
+  if (!(gl_version == 3 || gl_version == 4))
+    gl_version = 4;
 }
 
 void parse_args (int argc, char* argv[])
@@ -51,6 +55,8 @@ void parse_args (int argc, char* argv[])
            height = atoi(argv[i+1]);
          else if (!strcmp(argv[i], "-swap_interval"))
            swap_interval = atoi(argv[i+1]);
+         else if (!strcmp(argv[i], "-gl"))
+           gl_version = atoi(argv[i+1]);
          else if (!strcmp(argv[i], "-dir"))
            filedir = argv[i+1];
          else if (!strcmp(argv[i], "-help") ||
@@ -137,8 +143,8 @@ int main (int argc, char* argv[])
       exit (EXIT_FAILURE);
 
   // Context configuration
-  glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 4);
+  glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, gl_version);
+  glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, gl_version);
   glfwWindowHint (GLFW_CLIENT_API, GLFW_OPENGL_API);
   // Framebuffer
   glfwWindowHint (GLFW_DEPTH_BITS, 24);   // default
