@@ -1,8 +1,12 @@
 
 Building:
-cmake . -DCMAKE_BUILD_TYPE=Debug
+
+cmake .
+
 make
+
 ./4K_displaywall_bench -width 11520 -height 2160 -swap_interval 0
+
 
 
 you may need to do this:
