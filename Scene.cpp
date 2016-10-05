@@ -127,7 +127,7 @@ void Scene::Load ()
 
   // Load texture: load image, generate texture, upload texture
   std::vector<GLubyte> image_data;
-  unsigned error = lodepng::decode(image_data, img_width, img_height, "/chattel/cmanning/Pictures/bluespace.png");
+  unsigned error = lodepng::decode(image_data, img_width, img_height, "bluespace.png");
   //unsigned error = lodepng::decode(image_data, img_width, img_height, "/chattel/cmanning/Pictures/orion256_mult.png");
 
   if (error)
