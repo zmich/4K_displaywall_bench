@@ -31,6 +31,7 @@
 
 
 #include "Scene.h"
+#include "TexQuad.h"
 
 #include <fstream>
 #include <sstream>
@@ -40,6 +41,7 @@
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <cmath>
 
 #include <png/lodepng.h>
@@ -48,26 +50,18 @@
 using namespace proto;
 
 
-static GLuint texName;
-static float img_aspect;
-static glm::mat4 view;
-static GLint uniform_modelview = -1, uniform_projection = -1, uniform_texture = -1;
-static unsigned img_width, img_height;
-
-
 
 Scene::Scene ()
  : zoom(1.0),
-   window_width(640),
-   window_height(480)
+   window_width(640.0),
+   window_height(480.0),
+   do_arrange(false),
+   do_mipmap(false),
+   uniform_modelview(-1),
+   uniform_projection(-1),
+   uniform_texture(-1)
 
 {
-  //Load ();  // move to Setup
-  glBufferStorage = (PFNGLBUFFERSTORAGEPROC)glfwGetProcAddress ("glBufferStorage");
-  glTexStorage2D = (PFNGLTEXSTORAGE2DPROC)glfwGetProcAddress ("glTexStorage2D");
-
-  if (!glTexStorage2D || !glBufferStorage)
-    std::cout << "Problems loading advanced OpenGL API" << std::endl;
 }
 
 Scene::~Scene ()
@@ -77,17 +71,9 @@ Scene::~Scene ()
 
 void Scene::Load ()
 {
- // Load Geometry
- /*
-     2------------1
-     | \          |
-     |   \        |
-     |     \      |
-     |       \    |
-     |          \ |
-     3------------0
- */
+  // Load Geometry
   float z = 0.0;
+
   // vert 0
   vertex_array[0] = 1.0;   vertex_array[1] = -1.0;   vertex_array[2] = z;  //xyz
   vertex_array[3] = 1.0;   vertex_array[4] = 0.0;                          //uv
@@ -123,29 +109,6 @@ void Scene::Load ()
   glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, index_vbo);
   glBufferData (GL_ELEMENT_ARRAY_BUFFER, sizeof(index_array), index_array, GL_STATIC_DRAW);
 
-  glBindVertexArray (0);
-
-  // Load texture: load image, generate texture, upload texture
-  std::vector<GLubyte> image_data;
-  unsigned error = lodepng::decode(image_data, img_width, img_height, "/chattel/cmanning/Pictures/bluespace.png");
-  //unsigned error = lodepng::decode(image_data, img_width, img_height, "/chattel/cmanning/Pictures/orion256_mult.png");
-
-  if (error)
-    std::cout << "lodepng decode error " << error << ": " << lodepng_error_text(error) << std::endl;
-  else
-    std::cout << "finished image IO and decode" << std::endl;
-
-
-
-
-  glGenTextures (1, &texName);
-  glBindTexture (GL_TEXTURE_2D, texName);
-  glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, img_width, img_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, &image_data[0]);
-
 
   // Load shaders
   vertex_shader_source = Util::loadShaderSourceFromFile ("simple.vert");
@@ -171,7 +134,6 @@ void Scene::Load ()
     }
 
   // get uniform locations
-  //GLint uniform_modelview = -1, uniform_projection = -1, uniform_texture = -1;
   uniform_modelview = glGetUniformLocation (program, "u_modelView");
   uniform_projection = glGetUniformLocation (program, "u_projection");
   uniform_texture = glGetUniformLocation (program, "u_texture");
@@ -188,22 +150,20 @@ void Scene::Load ()
   else
    { std::cout << "whoops" << std::endl; }
 
+  // setup camera
   float fov = 45.0f;  // in degrees, but glm is expecting radians
   float aspect(window_width/window_height);
-  img_aspect = float(img_width)/float(img_height);
   float nearz = 0.01f;
   float farz = 10.0f;
-  glm::mat4 projection = glm::perspective (glm::radians(fov), aspect, nearz, farz);
-  glm::mat4 model = glm::scale (glm::mat4 (1.0f), glm::vec3 (zoom*img_aspect, zoom, zoom));
-  //glm::mat4 model = glm::scale (glm::mat4 (1.0f), glm::vec3 (zoom, zoom, zoom));
+  projection = glm::perspective (glm::radians(fov), aspect, nearz, farz);
+  glm::mat4 model (1.0f);
   float x = tanf(M_PI_2 - glm::radians(fov/2.0f));  // cotangent
   view = glm::lookAt (
       glm::vec3 (0.0f, 0.0f, x),    // camera position in world space
-      glm::vec3 (0.0f, 0.0f, 0.0f),  // looking at the origin
+      glm::vec3 (0.0f, 0.0f, 0.0f), // looking at the origin
       glm::vec3 (0.0f, 1.0f, 0.0f)  // up vector
   );
   glm::mat4 modelView = view * model;
-
 
 
   // use program and set uniforms
@@ -211,38 +171,120 @@ void Scene::Load ()
   glUniformMatrix4fv (uniform_modelview, 1, GL_FALSE, glm::value_ptr(modelView));
   glUniformMatrix4fv (uniform_projection, 1, GL_FALSE, glm::value_ptr(projection));
   glUniform1i (uniform_texture, GL_TEXTURE0 - GL_TEXTURE0);
+
+  // make texquads
+  const size_t num_images = image_paths.size();
+  std::cout << "num images " << num_images << " (" << aspect << ")" << std::endl;
+  size_t rows = 0, columns = 0;
+  if (aspect > 1.0)
+   {
+     rows = std::max (1.0, std::floor(double(num_images) / double(aspect)));
+     columns = std::ceil(double(num_images) / double(rows));
+   }
+  else if (aspect < 1.0)
+   {
+     columns = std::max (1.0, std::floor(double(num_images) * double(aspect)));
+     rows = std::ceil(double(num_images) / double(columns));
+   }
+  else
+   {
+     const size_t root = static_cast<size_t> (std::ceil (std::sqrt (num_images)));
+     rows = num_images / root + (num_images % root ? 1 : 0);
+     columns = root;
+   }
+  std::cout << "Geometry: " << columns << " x " << rows << std::endl;
+
+  glm::vec2 starting_scale(1.0f);  // camera set for vertically centered -1 to 1 square
+  if (do_arrange)
+   {
+     size_t maxdim = std::max (rows, columns);
+     size_t mindim = std::min (rows, columns);
+     if (aspect > 1.0) {
+       starting_scale = glm::vec2( std::min( std::floor(aspect) / float(maxdim),
+                                             1.0f / float(mindim)) );
+     } else {
+       starting_scale = glm::vec2( std::min( std::floor(1.0f/aspect) / float(maxdim),
+                                             1.0f / float(mindim)) );
+     }
+   }
+  if (aspect < 1.0)
+    starting_scale *= aspect;
+
+  std::cout << "Starting scale " <<  glm::to_string (starting_scale) << std::endl;
+
+  if (do_arrange)
+   { const float pad = 0.1;
+     const float size = 2.0f + pad;  // square -1 -> 1
+     glm::vec3 pos(0.0f);
+     int i = 0;
+     for (float r = float(rows-1)*0.5; r > -float(rows)*0.5; r -= 1.0f)
+       { std::cout << "row " << r << std::endl;
+         pos.y = size * r;
+         for (float c = -float(columns-1)*0.5; c < float(columns)*0.5; c += 1.0f)
+            { if (i < num_images)
+              { std::cout << "col " << c << std::endl;
+                pos.x = size * c;
+                std::cout << glm::to_string(pos) << std::endl;
+                TexQuad *tq = new TexQuad(image_paths[i],
+                                          aspect,
+                                          pos,
+                                          starting_scale,
+                                          do_mipmap,
+                                          do_arrange);
+                tq -> Setup ();
+                tq -> SetViewMatrix (uniform_modelview, view);
+                texquads.push_back (tq);
+                i++;
+              }
+           }
+       }
+   }
+  else
+   { for (int i = 0; i < image_paths.size(); i++)
+      { TexQuad *tq = new TexQuad(image_paths[i],
+                                  aspect,
+                                  glm::vec3(0.0f),
+                                  starting_scale,
+                                  do_mipmap,
+                                  do_arrange);
+        tq -> Setup ();
+        tq -> SetViewMatrix (uniform_modelview, view);
+        texquads.push_back (tq);
+      }
+   }
 }
 
 void Scene::Unload ()
-{ glBindVertexArray (vao);
+{
+  glDeleteProgram (program);
+
+  glBindVertexArray (vao);
   glDeleteBuffers (1, &vertex_vbo);
   glDeleteBuffers (1, &index_vbo);
   glDeleteVertexArrays (1, &vao);
   glBindVertexArray (0);
 
-  glDeleteProgram (program);
+  for (int i = 0; i < texquads.size(); i++)
+    delete texquads[i];
 }
 
 void Scene::Setup ()
 { Load ();
   glClearColor ( 0.0, 0.1, 0.2, 0.0 );
   glEnable (GL_DEPTH_TEST);
-  glBindVertexArray (vao);   // onetime bind
 }
 
 void Scene::Update ()
 {
-  // update shader uniforms
-  glm::mat4 model = glm::scale (glm::mat4 (1.0f), glm::vec3 (zoom*img_aspect, zoom, zoom));
-  glm::mat4 modelView = view * model;
-  glUniformMatrix4fv (uniform_modelview, 1, GL_FALSE, glm::value_ptr(modelView));
 }
 
 void Scene::Draw ()
-{ // bind textures
-  glActiveTexture (GL_TEXTURE0);
-  glBindTexture (GL_TEXTURE_2D, texName);
-  glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glDrawElements (GL_TRIANGLE_STRIP, sizeof(index_array)/sizeof(index_array[0]), GL_UNSIGNED_SHORT, 0);
+{ glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  for (int i = 0; i < texquads.size(); i++) {
+    texquads[i] -> Update ();
+    texquads[i] -> Bind ();
+    glDrawElements (GL_TRIANGLE_STRIP, sizeof(index_array)/sizeof(index_array[0]), GL_UNSIGNED_SHORT, 0);
+    texquads[i] -> Unbind ();
+  }
 }
 
