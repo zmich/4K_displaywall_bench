@@ -29,8 +29,8 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __Scene__proto__
-#define __Scene__proto__
+#ifndef __TexQuad__proto__
+#define __TexQuad__proto__
 
 #include <iostream>
 
@@ -50,35 +50,25 @@
 
 namespace proto {
 
-class TexQuad;
-
-class Scene {
+class TexQuad {
 
 public:
-  Scene ();
-  ~Scene ();
+  TexQuad (const std::string &path,
+           const float win_aspect = 16.0f/9.0f,
+           const glm::vec3 &pos = glm::vec3(0.0f),
+           const glm::vec2 &scale = glm::vec2(1.0f),
+           bool mipmap = false,
+           bool arrange = false
+          );
+  ~TexQuad ();
 
   void Setup ();
   void Update ();
-  void Draw ();
+  void Bind ();
+  void Unbind ();
 
-  void ResetZoom ()
-    { zoom = 1.0; }
-
-  void IncrementZoom ()
-    { zoom *= 1.1; }
-
-  void DecrementZoom ()
-    { zoom *= 0.9; }
-
-  void SetWindow (float w, float h)
-    { window_width = w;  window_height = h; }
-
-  void SetImagePaths (const std::vector <std::string> &paths,
-                      bool arrange, bool mipmap)
-    { image_paths = paths;
-      do_arrange = arrange;
-      do_mipmap = mipmap; }
+  void SetViewMatrix (GLint uniform, const glm::mat4 &mat)
+    { uniform_modelview = uniform;  view = mat; }
 
 public:
   enum vertexAttrib {
@@ -91,37 +81,23 @@ protected:
   void Unload ();
 
 protected:
-  float zoom;
+  std::string img_path;
+  float window_aspect;
+  glm::vec3 position;
+  glm::vec2 scale;
 
-  float window_width;
-  float window_height;
-
-  bool do_arrange;
-  bool do_mipmap;
-
-  GLuint vao;
-  GLuint index_vbo;
-  GLuint vertex_vbo;
-  GLuint texName;
-
-  GLfloat vertex_array[20];
-  GLushort index_array[6];
-
-  std::string vertex_shader_source;
-  std::string fragment_shader_source;
-  GLuint program;
-
-  glm::mat4 view;
-  glm::mat4 projection;
+  unsigned int img_width;
+  unsigned int img_height;
 
   GLint uniform_modelview;
-  GLint uniform_projection;
-  GLint uniform_texture;
+  glm::mat4 view;
+  GLuint texName;
 
-  std::vector <std::string> image_paths;
-  std::vector <TexQuad*> texquads;
+  bool do_mipmap;
+  bool do_arrange;
+
 };
 
 }
 
-#endif  // defined(__Scene__proto__)
+#endif  // defined(__TexQuad__proto__)

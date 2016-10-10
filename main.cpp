@@ -41,7 +41,9 @@ namespace proto {
   int height = 2160;
   int swap_interval = 0;
   int gl_version = 4;
-  std::string filedir;
+  bool do_arrange = false;
+  bool do_mipmap = false;
+  std::vector <std::string> image_paths;
   Scene *scene;
 }
 
@@ -54,6 +56,9 @@ void help_msg (std::string prog)
   std::cout << "    -height [h]" << std::endl;
   std::cout << "    -swap_interval [0 (disable vsync) or 1 (enable vsync)]" << std::endl;
   std::cout << "    -gl [3 (OpenGL version 3.3) or 4 (OpenGL version 4.4, default)]" << std::endl;
+  std::cout << "    -i [image path] (for each image you want to display)" << std::endl;
+  std::cout << "    -layout [true | false] (true = grid, false = overlap)" << std::endl;
+  std::cout << "    -mipmap [true | false]" << std::endl;
   exit (EXIT_SUCCESS);
 }
 
@@ -75,7 +80,6 @@ void parse_args (int argc, char* argv[])
     return;
   for (int i = 1; i < argc; ++i)
    {
-     //printf ("ARG %d : %s\n", i, argv[i]);
      if (argv[i][0] == '-')
        {
          if (!strcmp(argv[i], "-width"))
@@ -86,8 +90,12 @@ void parse_args (int argc, char* argv[])
            swap_interval = atoi(argv[i+1]);
          else if (!strcmp(argv[i], "-gl"))
            gl_version = atoi(argv[i+1]);
-         else if (!strcmp(argv[i], "-dir"))
-           filedir = argv[i+1];
+         else if (!strcmp(argv[i], "-i"))
+           image_paths.push_back(argv[i+1]);
+         else if (!strcmp(argv[i], "-layout"))
+           do_arrange = (!strcmp(argv[i+1], "true")) ? true : false;
+         else if (!strcmp(argv[i], "-mipmap"))
+           do_mipmap = (!strcmp(argv[i+1], "true")) ? true : false;
          else if (!strcmp(argv[i], "-help") ||
                   !strcmp(argv[i], "--help"))
            help_msg (argv[0]);
@@ -180,7 +188,6 @@ int main (int argc, char* argv[])
   glfwWindowHint (GLFW_DOUBLEBUFFER, true);   // default
   // Monitor
   glfwWindowHint (GLFW_REFRESH_RATE, GLFW_DONT_CARE);  // highest avail, default
-  //glfwWindowHint (GLFW_REFRESH_RATE, 60);
 #ifdef DEBUG
   glfwWindowHint (GLFW_OPENGL_DEBUG_CONTEXT, true);
 #endif
@@ -232,18 +239,15 @@ int main (int argc, char* argv[])
        setDebugMsgControl (GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unusedIds, true);
      }
   }
-
-  if (glfwExtensionSupported ("GL_ARB_buffer_storage"))
-    printf ("GL_ARB_buffer_storage is supported\n");
 #endif
 
   scene = new Scene ();
   scene -> SetWindow (width, height);
+  scene -> SetImagePaths (image_paths, do_arrange, do_mipmap);
   scene -> Setup ();
 
   while (!glfwWindowShouldClose (window))
-    { scene -> Update ();
-      scene -> Draw ();
+    { scene -> Draw ();
       output_fps (window);
       glfwSwapBuffers (window);
       glfwPollEvents ();
