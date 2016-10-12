@@ -63,13 +63,13 @@ public:
   void Draw ();
 
   void ResetZoom ()
-    { zoom = 1.0; }
+    { zoom = 1.0f; }
 
   void IncrementZoom ()
-    { zoom *= 1.1; }
+    { zoom *= 1.1f; }
 
   void DecrementZoom ()
-    { zoom *= 0.9; }
+    { zoom *= 0.9f; }
 
   void SetWindow (float w, float h)
     { window_width = w;  window_height = h; }

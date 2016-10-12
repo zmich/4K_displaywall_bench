@@ -33,6 +33,7 @@
 #include "Scene.h"
 #include "TexQuad.h"
 
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 
@@ -270,6 +271,7 @@ void Scene::Unload ()
 
 void Scene::Setup ()
 { Load ();
+  //glClearColor ( 0.0, 0.0, 0.0, 0.0 );  // uncomment for Windows
   glClearColor ( 0.0, 0.1, 0.2, 0.0 );
   glEnable (GL_DEPTH_TEST);
 }
