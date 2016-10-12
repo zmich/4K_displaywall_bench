@@ -225,7 +225,8 @@ void Scene::Load ()
               { std::cout << "col " << c << std::endl;
                 pos.x = size * c;
                 std::cout << glm::to_string(pos) << std::endl;
-                TexQuad *tq = new TexQuad(image_paths[i],
+                TexQuad *tq = new TexQuad(i,
+                                          image_paths[i],
                                           aspect,
                                           pos,
                                           starting_scale,
@@ -241,7 +242,8 @@ void Scene::Load ()
    }
   else
    { for (int i = 0; i < image_paths.size(); i++)
-      { TexQuad *tq = new TexQuad(image_paths[i],
+      { TexQuad *tq = new TexQuad(i,
+                                   image_paths[i],
                                   aspect,
                                   glm::vec3(0.0f),
                                   starting_scale,

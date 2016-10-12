@@ -53,7 +53,8 @@ namespace proto {
 class TexQuad {
 
 public:
-  TexQuad (const std::string &path,
+  TexQuad (int index,
+           const std::string &path,
            const float win_aspect = 16.0f/9.0f,
            const glm::vec3 &pos = glm::vec3(0.0f),
            const glm::vec2 &scale = glm::vec2(1.0f),
@@ -96,6 +97,8 @@ protected:
   bool do_mipmap;
   bool do_arrange;
 
+private:
+  int index;
 };
 
 }

@@ -49,7 +49,8 @@ using namespace proto;
 
 
 
-TexQuad::TexQuad (const std::string &path,
+TexQuad::TexQuad (int index,
+                  const std::string &path,
                   const float win_aspect,
                   const glm::vec3 &pos,
                   const glm::vec2 &sc,
@@ -60,7 +61,8 @@ TexQuad::TexQuad (const std::string &path,
    position(pos),
    scale(sc),
    do_mipmap(mipmap),
-   do_arrange(arrange)
+   do_arrange(arrange),
+   index(index)
 {
 }
 
@@ -82,6 +84,7 @@ void TexQuad::Load ()
     std::cout << "finished image IO and decode" << std::endl;
 
 
+  glActiveTexture (GL_TEXTURE0 + index);
   glGenTextures (1, &texName);
   glBindTexture (GL_TEXTURE_2D, texName);
   std::cout << "Loading TexQuad " << img_path << " texture id is " << texName << std::endl;
@@ -92,7 +95,7 @@ void TexQuad::Load ()
   glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, img_width, img_height, 0, GL_BGRA, GL_UNSIGNED_BYTE, &image_data[0]);
   if (do_mipmap)
     glGenerateMipmap (GL_TEXTURE_2D);
-  glBindTexture (GL_TEXTURE_2D, 0);
+  //glBindTexture (GL_TEXTURE_2D, 0);
 
 }
 
@@ -122,12 +125,12 @@ void TexQuad::Update ()
 
 void TexQuad::Bind ()
 {
-  glActiveTexture (GL_TEXTURE0);
-  glBindTexture (GL_TEXTURE_2D, texName);
+  glActiveTexture (GL_TEXTURE0 + index);
+  //glBindTexture (GL_TEXTURE_2D, texName);
 }
 
 void TexQuad::Unbind ()
 {
-  glBindTexture (GL_TEXTURE_2D, 0);
+  //glBindTexture (GL_TEXTURE_2D, 0);
 }
 
