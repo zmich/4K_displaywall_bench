@@ -32,6 +32,18 @@ Use the width and height to define the viewport, which may span multiple display
 
 If your driver does not support OpenGL 4.4 (GLXBadFBConfig), run with -gl 3 for a version 3.3 context.
 
+#Testing
+
+Requires Python 2.7.  Invokes test application with different parameters.  Press Esc key to quit each invocation of the test application.
+
+##Linux
+
+    ./run_test.py
+
+##Windows
+(tested in Git Bash terminal)
+    winpty C:/Python27/Python.exe run_win_test.py
+
 #License
 
 4K_displaywall_bench is freely available for download under the terms of the [BSD3](https://github.com/Oblong/4K_displaywall_bench/blob/master/COPYING "COPYING") License.

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 import os
 import subprocess
@@ -57,22 +58,6 @@ subprocess.call(["./4K_displaywall_bench", "-width", "11520", "-height", "2160",
 subprocess.call(["./4K_displaywall_bench", "-width", "11520", "-height", "2160",
                                            "-swap_interval", "0",
                                            "-mipmap", "true", "-layout", "true",
-                                           "-i", "./images/bubble4K.png",
-                                           "-i", "./images/bubble4K.png",
-                                           "-i", "./images/bubble4K.png",
-                                           "-i", "./images/bubble4K.png",
-                                           "-i", "./images/bubble4K.png",
-                                           "-i", "./images/bubble4K.png",
-                                           "-i", "./images/bubble4K.png",
-                                           "-i", "./images/bubble4K.png",
-                                           "-i", "./images/bubble4K.png",
-                                           "-i", "./images/bubble4K.png",
-                                           ], cwd=local_cwd)
-
-# 10 images, turn off grid (texquads overlap)
-subprocess.call(["./4K_displaywall_bench", "-width", "11520", "-height", "2160",
-                                           "-swap_interval", "0",
-                                           "-mipmap", "true", "-layout", "false",
                                            "-i", "./images/bubble4K.png",
                                            "-i", "./images/bubble4K.png",
                                            "-i", "./images/bubble4K.png",
