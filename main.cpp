@@ -45,6 +45,7 @@ namespace proto {
   bool do_mipmap = false;
   std::vector <std::string> image_paths;
   Scene *scene;
+  int monitor_index;
 }
 
 using namespace proto;
@@ -96,6 +97,8 @@ void parse_args (int argc, char* argv[])
            do_arrange = (!strcmp(argv[i+1], "true")) ? true : false;
          else if (!strcmp(argv[i], "-mipmap"))
            do_mipmap = (!strcmp(argv[i+1], "true")) ? true : false;
+         else if (!strcmp(argv[i], "-index"))
+           monitor_index = atoi(argv[i+1]);
          else if (!strcmp(argv[i], "-help") ||
                   !strcmp(argv[i], "--help"))
            help_msg (argv[0]);
@@ -192,7 +195,10 @@ int main (int argc, char* argv[])
   glfwWindowHint (GLFW_OPENGL_DEBUG_CONTEXT, true);
 #endif
 
-  GLFWwindow* window = glfwCreateWindow (width, height, "4K_displaywall_bench", NULL, NULL);
+  int count;
+  GLFWmonitor** monitors = glfwGetMonitors(&count);
+
+  GLFWwindow* window = glfwCreateWindow (3840, 2160, "4K_displaywall_bench", monitors[monitor_index], NULL);
   if (!window)
     { glfwTerminate ();
       exit (EXIT_FAILURE);
@@ -208,15 +214,15 @@ int main (int argc, char* argv[])
   glfwGetFramebufferSize (window, &width, &height);
   glViewport (0, 0, width, height);
 
-  int mon_count;
-  GLFWmonitor** monitors = glfwGetMonitors (&mon_count);
-  for (int i = 0; i < mon_count; ++i)
-  {
-    const GLFWvidmode* vmode = glfwGetVideoMode(*monitors);
-    std::cout << "video mode for monitor " << i << " reports " <<
-	         vmode->refreshRate << " refresh rate" << std::endl;
-    monitors++;
-  }
+  //int mon_count;
+  //GLFWmonitor** monitors = glfwGetMonitors (&mon_count);
+  //for (int i = 0; i < mon_count; ++i)
+  //{
+  //  const GLFWvidmode* vmode = glfwGetVideoMode(*monitors);
+  //  std::cout << "video mode for monitor " << i << " reports " <<
+	//         vmode->refreshRate << " refresh rate" << std::endl;
+  //  monitors++;
+  //}
 
   glfwSetKeyCallback (window, key_callback);
   glfwSetCursorPosCallback (window, cursor_pos_callback);
