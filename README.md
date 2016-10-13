@@ -41,7 +41,9 @@ Requires Python 2.7.  Invokes test application with different parameters.  Press
     ./run_test.py
 
 ##Windows
+
 (tested in Git Bash terminal)
+
     winpty C:/Python27/Python.exe run_win_test.py
 
 #License
