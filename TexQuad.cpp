@@ -107,14 +107,9 @@ void TexQuad::Setup ()
 void TexQuad::Update ()
 {
   // update shader uniforms
-  float img_aspect = static_cast<float>(img_width)/static_cast<float>(img_height);
   glm::mat4 scale_mat = glm::scale (glm::mat4 (1.0f), glm::vec3 (scale.x, scale.y, 1.0f));
   if (!do_arrange)
-   { if (window_aspect > 1.0f)
-       scale_mat = glm::scale (glm::mat4 (1.0f), glm::vec3 (scale.x*img_aspect, scale.y, 1.0f));
-     else
-       scale_mat = glm::scale (glm::mat4 (1.0f), glm::vec3 (scale.x, scale.y/img_aspect, 1.0f));
-   }
+    scale_mat = glm::scale (glm::mat4 (1.0f), glm::vec3 (20*scale.x, 20*scale.y, 1.0f));
   glm::mat4 model = glm::translate (scale_mat, position);
   glm::mat4 modelView = view * model;
   glUniformMatrix4fv (uniform_modelview, 1, GL_FALSE, glm::value_ptr(modelView));

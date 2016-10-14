@@ -213,6 +213,21 @@ void Scene::Load ()
 
   std::cout << "Starting scale " <<  glm::to_string (starting_scale) << std::endl;
 
+  TexQuad *bg = new TexQuad(image_paths[0],
+                            aspect,
+                            glm::vec3(0.5f),
+                            starting_scale,
+                            do_mipmap,
+                            false);
+  bg -> Setup ();
+  float q = tanf(M_PI_2 - glm::radians(fov/2.0f));  // cotangent
+  glm::mat4 hack = glm::lookAt (
+    glm::vec3 (0.0f, 0.0f, q+1),    // camera position in world space
+    glm::vec3 (0.0f, 0.0f, 0.0f), // looking at the origin
+    glm::vec3 (0.0f, 1.0f, 0.0f)  // up vector
+  );
+  bg -> SetViewMatrix (uniform_modelview, hack);
+  texquads.push_back(bg);
   if (do_arrange)
    { const float pad = 0.1;
      const float size = 2.0f + pad;  // square -1 -> 1
@@ -281,7 +296,7 @@ void Scene::Update ()
 }
 
 void Scene::Draw ()
-{ glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+{ glClear (GL_DEPTH_BUFFER_BIT);
   for (int i = 0; i < texquads.size(); i++) {
     texquads[i] -> Update ();
     texquads[i] -> Bind ();
